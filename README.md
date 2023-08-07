@@ -5,6 +5,8 @@
 ## 用法
 
 ```rust
+use filewalker::FileWalker;
+
 let path = "/etc";
 let walker = FileWalker::open(Path::new(path))?;
 
