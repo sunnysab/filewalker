@@ -32,7 +32,7 @@ impl Iterator for FileWalker {
                 // If current entrance is not available, consider that there are still some files to
                 // iterate and `lowest_dir_iter` has been moved, return error and wait for a next call.
                 if let Err(e) = next_entry {
-                    return Some(Err(e.into()));
+                    return Some(Err(e));
                 }
                 let path = next_entry.unwrap().path();
                 if path.is_file() {
@@ -47,7 +47,7 @@ impl Iterator for FileWalker {
                         Err(e) => {
                             // Maybe for permission denied the sub-directory can not be accessed,
                             // just return that error and ignore, wait for a next call
-                            return Some(Err(e.into()));
+                            return Some(Err(e));
                         }
                     }
                 }
