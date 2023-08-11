@@ -1,4 +1,4 @@
-use std::fs::{self, ReadDir};
+use std::fs::{self, DirEntry, ReadDir};
 use std::path::{Path, PathBuf};
 use std::io;
 
@@ -20,7 +20,7 @@ impl FileWalker {
 }
 
 impl Iterator for FileWalker {
-    type Item = io::Result<PathBuf>;
+    type Item = io::Result<DirEntry>;
 
     /// Get next file in the directory and sub-directories.
     /// Any error will make a None returned.
@@ -31,16 +31,17 @@ impl Iterator for FileWalker {
             if let Some(next_entry) = lowest_dir_iter.next() {
                 // If current entrance is not available, consider that there are still some files to
                 // iterate and `lowest_dir_iter` has been moved, return error and wait for a next call.
-                if let Err(e) = next_entry {
-                    return Some(Err(e));
-                }
-                let path = next_entry.unwrap().path();
-                if path.is_file() {
-                    // Once we found a file
-                    return Some(Ok(path));
+                let entry = match next_entry {
+                    Ok(entry) => entry,
+                    Err(e) => return Some(Err(e)),
+                };
+
+                if !entry.is_dir() {
+                    // Some pipes, symbol links may be returned.
+                    return Some(Ok(entry));
                 } else {
                     // Once we found a new directory, push its iterator back to the stack
-                    match fs::read_dir(path) {
+                    match fs::read_dir(&entry.path()) {
                         Ok(new_subdirectory) => {
                             self.stack.push(new_subdirectory);
                         }
