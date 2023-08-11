@@ -32,25 +32,30 @@ impl Iterator for FileWalker {
                 // If current entrance is not available, consider that there are still some files to
                 // iterate and `lowest_dir_iter` has been moved, return error and wait for a next call.
                 let entry = match next_entry {
-                    Ok(entry) => entry,
+                    Ok(entry) => { entry },
                     Err(e) => return Some(Err(e)),
                 };
 
-                if !entry.is_dir() {
-                    // Some pipes, symbol links may be returned.
-                    return Some(Ok(entry));
-                } else {
-                    // Once we found a new directory, push its iterator back to the stack
-                    match fs::read_dir(&entry.path()) {
-                        Ok(new_subdirectory) => {
-                            self.stack.push(new_subdirectory);
+                match entry.file_type() {
+                    Ok(entry_type) => {
+                        if entry_type.is_dir() {
+                            // Once we found a new directory, push its iterator back to the stack
+                            match fs::read_dir(&entry.path()) {
+                                Ok(new_subdirectory) => {
+                                    self.stack.push(new_subdirectory);
+                                }
+                                Err(e) => {
+                                    // Maybe for permission denied the sub-directory can not be accessed,
+                                    // just return that error and ignore, wait for a next call
+                                    return Some(Err(e));
+                                }
+                            }
+                        } else  {
+                            // Some pipes, symbol links may be returned.
+                            return Some(Ok(entry));
                         }
-                        Err(e) => {
-                            // Maybe for permission denied the sub-directory can not be accessed,
-                            // just return that error and ignore, wait for a next call
-                            return Some(Err(e));
-                        }
-                    }
+                    } ,
+                    Err(e) => return  Some(Err(e)),
                 }
             } else {
                 // Return to up level and try again
