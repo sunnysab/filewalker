@@ -11,8 +11,8 @@ let path = "/etc";
 let walker = FileWalker::open(Path::new(path))?;
 
 for file in walker.take(50) {
-    if let Ok(file_path) = file {
-        println!("{}", file_path.display());
+    if let Ok(file_entry) = file {
+        println!("{}", file_entry.path().display());
     }
 }
 ```
