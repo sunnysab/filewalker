@@ -1,14 +1,14 @@
-use std::path::Path;
 use filewalker::FileWalker;
+use std::path::Path;
 
 fn main() -> std::io::Result<()> {
     let path = "/etc";
-    let walker = FileWalker::open(Path::new(path))?;
+    let walker = FileWalker::open(Path::new(path))?
+        .file_only(true)
+        .filter_hidden_items(true);
 
-    for file in walker.take(50) {
-        if let Ok(file_entry) = file {
-            println!("{}", file_entry.path().display());
-        }
+    for dir_entry in walker.take(50).flatten() {
+        println!("{}", dir_entry.path().display());
     }
     Ok(())
 }
