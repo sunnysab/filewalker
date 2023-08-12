@@ -64,7 +64,7 @@ impl FileWalker {
                                         // Leave current directory and jump to subdirectory.
                     // When the sub task end, this level of directory continue.
                     break 'iter_dir;
-                } else if (self.file_only && file_type.is_file()) || !self.file_only{
+                } else if !self.file_only || file_type.is_file(){
                     return Ok(Some(entry));
                 }
                 // current file is not a regular file, continue.
