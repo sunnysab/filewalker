@@ -16,7 +16,8 @@ pub struct FileWalker {
 }
 
 impl FileWalker {
-    pub fn open(root: &Path) -> io::Result<Self> {
+    pub fn open<P: AsRef<Path>>(root: P) -> io::Result<Self> {
+        let root: &Path = root.as_ref();
         let iter = root.read_dir()?;
 
         let stack = vec![iter];
